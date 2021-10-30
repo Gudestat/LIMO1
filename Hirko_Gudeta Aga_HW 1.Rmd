@@ -1,0 +1,177 @@
+---
+title: "Linear Model Home Work 1"
+author: "Gudeta Aga Hirko"
+date: "10/24/2021"
+output: pdf_document
+fontsize: 12pt
+---
+
+```{r setup, include=FALSE}
+library(bookdown)
+library(tidyverse)
+knitr::opts_chunk$set(echo = TRUE)
+```
+This Home work was take place as follows with R output considering the the given data and research questions. The answer was given for each question under question asked. 
+
+Immunoglobulins in the blood are known to protect against diseases. We consider a preclinical study in which a potential new drug, a chemical compound with the name ADDF19, is evaluated for negative side effects. One of these effects, could be its negative effect on the blood serum levels of Immunoglobulin IgG1. Healthy mice have IgG1 blood serum concentrations between 1:2 and 5 mg/l.
+A lab animal experiment is set up with 18 mice. For each of the following doses of ADDF19, three mice were included in the study: 0.5µg, 0.75µg, 1µg, 1.25µg, 1.5µg and 2µg. The data are given in the R data file mice.RData.
+You are asked to perform statistical analysis for answering the following research questions.
+
+
+```{r}
+setwd("C:/Users/user/Desktop/UHasselt/Linear Model")
+load("mice.RData")
+```
+
+Before going to see the effect of the concentration of ADDF19 on the mean of IgGF blood level concentration I visualize the relationship between them as using scatter plot.
+
+```{r  fig.cap="Scatter plot of IgG1 and ADDF19", fig.height=5, fig.width=6}
+plot(mice$concentration,mice$IgG1, col='blue', pch=20, cex=2,
+	xlab="concentration of ADDF19", ylab="IgG1 blood level concentrations")
+```
+
+This scatter plot suggests a negative correlation between the concentration of ADDF19 and the IgG1 blood level concentration.
+What is the effect of the concentration of ADDF19 on the mean IgG1 blood level concentrations?
+
+In this question I want to quantify how the expected (Mean) IgGF19 blood level concentrations of Mice varies with the concentration of ADDF19 drug.
+To do this, the simple linear regression was applied to quantify the relationship between the variables mentioned. 
+
+```{r}
+model1=lm(IgG1~concentration,data = mice)
+mm=summary(model1)
+mm
+```
+
+The estimated (or fitted) regression line is thus given by
+$\hat{y}_i = 2.96 - 0.49 \text{ADDF19}_i$ .
+This implies that, if the concentration of ADDF19 increases with $1\mu$g, then  averagely, the IgG1 blood level serum is estimated to decrease by 0.49 mg/l.
+The next graph shows the estimated regression line.
+
+```{r fig.cap="Estimated regression line"}
+
+ggplot(mice,
+       aes(x=concentration, y=IgG1)) +
+  geom_point(color="green") +
+  xlab("IgG1 blood level") + ylab("concentration of ADDF19") +
+  theme(axis.title=element_text(size=15), axis.text = element_text(size=15)) +
+  geom_abline(intercept=model1$coefficients[1],
+              slope=model1$coefficients[2])
+```
+
+
+\newpage
+
+2. Give an appreciation of the (im)precision of the previous estimate (standard error and a 95% confidence interval).
+
+The standard error of the estimate tell us how much sampling variation there is if we were to re-sample and re-estimate the $\beta$. The smaller the standard error the narrower the CI at the given of significance level and small sample size made the CI wide. So, Standard error of the estimate is somewhat small. But, it is difficult to decide on the precision due to  small sample size. In fact, considering the result with the given sample size, the standard error still seems small and the CI is also not such wide. 
+
+when we observe the value, it looks like small and also the CI is narrow. 
+$\hat\sigma_{\beta_0} =  0.2116 ~~~ \text{and}~~~ \hat\sigma_{\beta_1} =  0.1671$.
+
+The 95\% confidence interval of $\beta_1$ is given by 
+
+$\left[\hat\beta_1 - t_{n-2;1-\alpha/2} \hat\sigma_{\beta_1}, \hat\beta_1 + t_{n-2;1-\alpha/2} \hat\sigma_{\beta_1} \right]$. 
+
+The next R code  used for the computation of the CI from $\it{model1}$.
+
+```{r}
+confint(model1,level=0.95)
+```
+
+We can say that, with a probability of 95% we expect that the regression coefficient$\beta_1$ is somewhere between -0.844 and -0.136
+Therefore, if the concentration of ADDF19  increases with 1µg, we expect with a probability of 95% that the the mean of IgG1 blood level of mice increases with  -0.844 mg/l to -0.136 mg/l.
+From the values of CI, all values within the CI are negative. The data are thus consistent with a negative effect of the concentration of ADDF19 on the mean IgG1 blood level concentrations.
+
+3. Is there a significant effect of the concentration of ADDF19 on the mean IgG1 blood level concentrations? This test must be performed at the 5% level of significance.
+
+Performing a regression analysis is, to give an answer to the research question whether or not the average outcome is linearly associated with a regressor and also the outcome variable is affected by the independent variable(s). In the case of the given data we wanted to know whether or not the mean of IgG1 blood level concentration affected by concentration of ADDF19. so, in terms of regression model, such research question translates into the  hypothesis testing.Depending on the given information about the study, I could decided left side hypothesis testing which is given by: 
+**$H_0:\beta_1=0~~~vs~~~H_1:\beta_1<0$
+
+The rejection region for the test at the $\alpha$ significance level follows from
+$p_0{T<-t_{n-2;1-\alpha}}$,
+
+ 
+From the fitted regression model above we have an observed test statistic $t=-2.93$ with p-value of 0.00488. To get this in R:
+
+```{r}
+t_cal<--0.49/0.1671
+t_cal
+pt(coef(mm)[2, 3], model1$df, lower = TRUE)
+```
+Hence, at the 5\% level of significance we conclude that there is a negative effect of the concentration of ADDF19 on the average IgG1 blood level concentrations (p<0.05). 
+
+## summary
+The results from linear regression model including the effect size and confidence interval confirmed that the new  concentration of ADDF19 has negative effect on the average IgG1 blood level as expected. Though the function of  IgG1 in blood is protecting against disease, the new drug goes in reverse in reducing the ability to fight the possible disease. To better identify the effect of  concentration of ADDF19 drug on the IgG1, repeating the experiment with larger sample size resulted in more precise result that helps the experimenter for the scientific decision.
+
+#2
+A simulation study in the context of the previous question. Use simulations to construct
+a graph with on the vertical axis the minimal required sample size n for obtaining a power
+of 80\%, and on the horizontal axis the effect size $\beta_1$. The significance level may be fixed
+at 5\%. 
+
+From this question we have different given which help us to construct the required graph.
+Power $(1-\beta)$, significance level {$\alpha$}, the variance of the residual and the distribution of the test statistic. In question 1, we used left tail alternative Hypothesis. Therefore, to find the power in the we used also  $$H1 : \beta_1 < 0$$ then, the power is given by:
+
+$$power=P \left(t_{n-2,(1-\alpha)}|\beta_{1}^{*} \right)$$
+
+```{r}
+library(tidyverse)
+
+funX<-function(n) {
+  # n: total sample size. It must be a multiple of 18
+  #
+  # This function constructs the design matrix for a given sample size 
+  m<-n/18
+  X<-matrix(nrow=n,ncol=2)
+  X[,1]<-1
+  X[,2]<-rep(mice[,1],m)
+  
+  return(X)
+}
+#funX(36)
+##Next we write a function for the power.
+
+pwrX<-function(n,es_1,sigma2=0.1223,alpha=0.05) {
+  # n: total sample size. It must be a multiple of 18
+  # es_1: effect size
+  # sigma2: varance of the error term
+  # alpha: significance level
+  #
+  # this functions computes the power for detecting the effect size at the alpha level 
+  
+  X<-funX(n)
+  sigma2Beta<-solve(t(X)%*%X)[2,2]*sigma2
+  ncp<-es_1/sqrt(sigma2Beta)
+  tcrit<-qt(1-alpha,df=n-3)
+  
+  pwr1<-pt(-tcrit,df=n-3,ncp = ncp)
+  
+  return(pwr1)
+}
+
+# check: power for se_1=-0.49 (which agrees with H0) should be alpha
+pwrX(72,es_1 =-0.49,sigma2=0.1222)
+
+####Next we apply the power function for a sequence of sample sizes and make a plot of power versus sample size.
+
+nseq<-seq(18,18*30,by=18)
+effectsize_b1=seq(-1,0,by=0.01)
+df1=expand.grid(ss=nseq,es=effectsize_b1) %>% arrange(ss)
+df1$pw<-NA
+for (i in 1:nrow(df1)) {
+  df1[i,3]=pwrX(n=df1[i,1],es=df1[i,2])
+
+}
+
+df2=df1 %>% filter(pw>=0.8 & pw<0.81)
+```
+
+
+```{r  fig.cap="Graph of the relationship between Sample size and effect size", warning=F}
+df2%>%ggplot(aes(x=es,y=ss))+geom_point(size=6)+geom_smooth(se=F)+theme_bw(base_size = 12)
+```
+The graph of the relationship between sample size and effect size at fixed power of 80\% and 5\% level of significance. we can observe from this, the relation between them is slightly direct.
+
+
+
+###### fb669439-0a9e-4d70-a9b7-417f23613409 ######
